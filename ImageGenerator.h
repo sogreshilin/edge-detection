@@ -22,7 +22,7 @@ public:
             lineColor(lineColor) {};
 
     MatrixXd generateImage(int alphaAngleDegrees, int betaAngleDegrees) {
-        MatrixXd image = MatrixXd::Zero(imageSize, imageSize);
+        MatrixXd image = MatrixXd::Constant(imageSize, imageSize, backgroundColor);
         auto x0 = imageSize / 2;
         auto y0 = imageSize / 2;
         auto[x1, y1] = coordinateCalculator.computeRayEndCoordinates(alphaAngleDegrees);
