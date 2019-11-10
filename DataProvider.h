@@ -19,27 +19,24 @@ public:
             backgroundColor(backgroundColor),
             lineColor(lineColor) {}
 
-    std::vector<std::pair<MatrixXd, MatrixXd>> prepareData(int imageSize, int degreeDelta) {
-        auto result = std::vector<std::pair<MatrixXd, MatrixXd>>();
-
+    std::pair<std::vector<MatrixXd>, std::vector<MatrixXd>> prepareData(
+            int imageSize,
+            const std::vector<std::pair<int, int>> &degreePairs
+    ) {
+        auto xs = std::vector<MatrixXd>();
+        auto ys = std::vector<MatrixXd>();
         ImageGenerator imageGenerator = ImageGenerator(imageSize, backgroundColor, lineColor);
-        auto degreePairs = std::vector<std::pair<int, int>>();
-        for (int alpha = 0; alpha < 360; alpha += degreeDelta) {
-            for (int beta = alpha + degreeDelta; beta < 360; beta += degreeDelta) {
-                degreePairs.emplace_back(alpha, beta);
-            }
-        }
-
         auto degreePairsSize = degreePairs.size();
+
         int i = 0;
-        for (const auto& [alpha, beta] : degreePairs) {
-            auto x = imageGenerator.generateImage(alpha, beta);
+        for (const auto&[alpha, beta] : degreePairs) {
+            xs.emplace_back(imageGenerator.generateImage(alpha, beta));
             MatrixXd y = MatrixXd::Zero(degreePairsSize, 1);
             y(i, 0) = 1.;
-            result.emplace_back(x, y);
+            ys.emplace_back(y);
         }
 
-        return result;
+        return std::make_pair(xs, ys);
     }
 
 private:

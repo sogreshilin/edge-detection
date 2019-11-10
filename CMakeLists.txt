@@ -7,13 +7,14 @@ find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 
 add_executable(
         neurons
-        main.cpp
-        FilterProvider.h
-        ImageGenerator.h
-        CoordinateCalculator.h
         AngleTranslationUtils.h
+        CoordinateCalculator.h
         DrawingUtils.h
         DataProvider.h
+        FilterProvider.h
+        ImageGenerator.h
+        Network.h
+        main.cpp
 )
 
 target_link_libraries(neurons Eigen3::Eigen)
