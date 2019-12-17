@@ -31,8 +31,60 @@ public:
         w2 = createW2();
     }
 
+    static MatrixXd activationFunction(MatrixXd matrix) {
+        return matrix;
+    }
+
+    static MatrixXd costFunctionDerivative(MatrixXd expected, MatrixXd actual) {
+        return actual - expected;
+    }
+
+    static MatrixXd activationFunctionDerivative(MatrixXd x) {
+        return MatrixXd::Constant(x.rows(), x.cols(), 1.);
+    }
+
     void train(int epochCount, double eta) {
-        // todo: implement
+        auto mask = createW2();
+
+        for (int currentEpoch = 0; currentEpoch < epochCount; ++currentEpoch) {
+            int hitCount = 0;
+            MatrixXd deltaW2 = MatrixXd::Zero(w2.rows(), w2.cols());
+
+            for (int i = 0; i < (int) x.size(); ++i) {
+                auto xCurrent = x[i];
+                auto yCurrent = y[i];
+                Eigen::Map<MatrixXd> a0(xCurrent.data(), xCurrent.rows() * xCurrent.cols(), 1);
+
+                auto z1 = w1 * a0;
+                auto a1 = activationFunction(z1);
+                auto z2 = w2 * a1;
+                auto a2 = activationFunction(z2);
+
+                MatrixXd::Index expectedMaxRow, expectedMaxCol;
+                yCurrent.maxCoeff(&expectedMaxRow, &expectedMaxCol);
+                int expectedMax = expectedMaxRow;
+
+                MatrixXd::Index actualMaxRow, actualMaxCol;
+                a2.maxCoeff(&actualMaxRow, &actualMaxCol);
+                int actualMax = actualMaxRow;
+
+                if (expectedMax == actualMax) {
+                    hitCount++;
+                }
+
+                MatrixXd eVector = MatrixXd::Zero(yCurrent.rows(), yCurrent.cols());
+                eVector(actualMax) = 1.;
+                MatrixXd delta = costFunctionDerivative(yCurrent, eVector).cwiseProduct(activationFunction(z2));
+                Eigen::Map<MatrixXd> reshapedDelta(delta.data(), delta.rows() * delta.cols(), 1);
+                Eigen::Map<MatrixXd> reshapedA1(a1.data(), 1, a1.rows() * a1.cols());
+                deltaW2 += reshapedDelta * reshapedA1;
+            }
+
+            w2 -= deltaW2.cwiseProduct(MatrixXd::Constant(deltaW2.rows(), deltaW2.cols(), eta / x.size()));
+            w2 = w2.cwiseProduct(mask);
+            auto accuracy = (double) hitCount / x.size();
+            std::cout << "accuracy: " << accuracy << std::endl;
+        }
     }
 
 private:
@@ -46,7 +98,9 @@ private:
     std::vector<MatrixXd> y;
     MatrixXd w1;
     MatrixXd w2;
+
     MatrixXd createW1();
+
     MatrixXd createW2();
 };
 
@@ -98,6 +152,7 @@ MatrixXd Network::createW2() {
         auto[x, y] = onesCoordinate;
         result(i, x) = 1.;
         result(i, y) = 1.;
+        i++;
     }
 
     return result;

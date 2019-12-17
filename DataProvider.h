@@ -34,6 +34,7 @@ public:
             MatrixXd y = MatrixXd::Zero(degreePairsSize, 1);
             y(i, 0) = 1.;
             ys.emplace_back(y);
+            i++;
         }
 
         return std::make_pair(xs, ys);
